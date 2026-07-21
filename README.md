@@ -11,6 +11,8 @@ The .csv files contain the NDWI index data.
 
 All of these files make up the training sample.  
 
+[download and extract files train_files](train_files.zip)
+
 After downloading and extracting the dataset, you need to specify the path to this folder in the code. Because all the training files are located in the same folder, you can use the exact same path for both the temperature and NDWI training directories:
 
 Important Note: Each file in the training directory must represent exactly 1 year of data.
