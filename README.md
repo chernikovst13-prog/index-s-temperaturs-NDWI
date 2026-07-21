@@ -22,7 +22,8 @@ In the test_ndwi_dir variable, specify the path to the folder containing the .cs
 
 The test file itself must be formatted strictly to contain only the date (Year-Month-Day) and the NDWI index, as shown below:
 
-<img width="285" height="574" alt="CSV format file" src="https://github.com/user-attachments/assets/165051d0-5698-4305-9fd8-a65402c991c9" />
+<img width="259" height="470" alt="image" src="https://github.com/user-attachments/assets/68188b0e-ffb0-47c2-97b9-c86cb462c98d" />
+
 
 ![CSV Format]
 
@@ -34,6 +35,8 @@ After launching the program, a prompt will appear in the terminal asking you to 
 
 5. Reviewing the Results
 For each year processed, the program will output a graph showing the predicted temperature trend and the start/end dates of the vegetation seasons.
+
+<img width="1200" height="600" alt="6363_predicted_temp" src="https://github.com/user-attachments/assets/4e8d2ac3-24ea-4727-a127-ab44850ffd64" />
 
 Along with the graphs, the program will generate 4 files in your output directory:
 
