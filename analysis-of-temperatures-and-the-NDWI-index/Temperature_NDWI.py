@@ -5,23 +5,23 @@ import numpy as np
 import csv
 from datetime import datetime
 
-def folder_grafics_NDVI(input_folder, output_folder, n):
+def folder_grafics_TEMPERATURE(input_folder, output_folder, n):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-    summary_file_path = os.path.join(output_folder, "all_ndvi.txt")
+    summary_file_path = os.path.join(output_folder, "all_temperature.txt")
     txt_files = glob.glob(os.path.join(input_folder, "*.txt"))
-   
+    
     if not txt_files:
-        print("there are no txt files in NDVI folder")
+        print("there are no txt files in TEMPERATURE folder")
         return
-   
+    
     with open(summary_file_path, 'w', encoding='utf-8') as summary_file:
         for file_path in txt_files:
             filename = os.path.basename(file_path)
-           
+            
             raw_data = []
             station = "Unknown"
-           
+            
             with open(file_path, 'r', encoding='utf-8') as f:
                 for line in f:
                     s = line.strip().split()
@@ -34,18 +34,18 @@ def folder_grafics_NDVI(input_folder, output_folder, n):
                         raw_data.append((dates_val, temp_val))
                     except (IndexError, ValueError):
                         continue
-           
+            
             if not raw_data:
                 print(f"file {filename} skipped (no data)")
                 continue
-               
+                
             raw_data.sort(key=lambda x: x[0])
             dates = [x[0] for x in raw_data]
             temps = [x[1] for x in raw_data]
-           
+            
             full_answer = [station]
             total = len(temps)
-           
+            
             # --- Smoothing ---
             averaged_temp = []
             for i in range(total):
@@ -71,9 +71,9 @@ def folder_grafics_NDVI(input_folder, output_folder, n):
                 if averaged_temp[i+1] <= 10 and averaged_temp[i] >= 10 and averaged_temp[i-4] >= 5:
                     full_answer.append(dates[i])
                     break
-           
+            
             summary_file.write(f"{filename}: {full_answer}\n")
-           
+            
             # --- Plot ---
             plt.figure(figsize=(12, 6))
             plt.plot(dates, temps, alpha=0.3, label='Raw temp.', color='red')
@@ -85,9 +85,9 @@ def folder_grafics_NDVI(input_folder, output_folder, n):
             poly_coeficients = np.polyfit(x_indx, temps, deg=3)
             polyfunction = np.poly1d(poly_coeficients)
             plt.plot(dates, polyfunction(x_indx), color='black', linestyle='-.', linewidth=2, label='trend')
-           
+            
             plt.xticks(dates[::30], rotation=45)
-            plt.title(f'NDVI: Temperature trend analysis ({filename})')
+            plt.title(f'TEMPERATURE: Temperature trend analysis ({filename})')
             plt.xlabel('Date')
             plt.ylabel('Temperature (°C)')
             plt.grid(True, linestyle='--', alpha=0.6)
@@ -97,66 +97,66 @@ def folder_grafics_NDVI(input_folder, output_folder, n):
             graph_filename = filename.replace('.txt', '.png')
             plt.savefig(os.path.join(output_folder, graph_filename))
             plt.close()
-    print("NDVI processing done.")
+    print("TEMPERATURE processing done.")
 
 
 def folder_grafics_NDWI(input_folder, output_folder, n):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-       
+        
     summary_file_path = os.path.join(output_folder, "all_ndwi.txt")
     csv_files = glob.glob(os.path.join(input_folder, "*.csv"))
-   
+    
     if not csv_files:
         print("there are no csv files :(")
         return
-       
+        
     with open(summary_file_path, 'w', encoding='utf-8') as summary_file:
         for file_path in csv_files:
             file_name = os.path.basename(file_path)
             raw_data = []
-           
+            
             station = file_name.replace('.csv', '')
-           
+            
             with open(file_path, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f, delimiter=',')
                 header = next(reader, None)  
-               
+                
                 for row in reader:
                     if not row or len(row) < 2:
                         continue
-                   
+                    
                     raw_date = row[0].strip()
                     raw_val = row[1].strip()
-                   
+                    
                     if not raw_val:
                         continue
-                       
+                        
                     try:
                         date_obj = datetime.strptime(raw_date, "%b %d, %Y")
                         dates_val = date_obj.strftime("%Y-%m-%d")
-                       
+                        
                         temp_val = float(raw_val)
                         raw_data.append((dates_val, temp_val)) 
                     except (ValueError, IndexError):
                         continue
-                       
+                        
             if not raw_data:
                 print(f"file {file_name} skipped (no valid data)")
                 continue
-               
+                
             raw_data.sort(key=lambda x: x[0])
             dates = [x[0] for x in raw_data]
             temps = [x[1] for x in raw_data]
-           
+            
             full_answer = [station]
             total = len(temps)
-               
+                
             x_idx = np.arange(total)
             poly_coefic_all = np.polyfit(x_idx, temps, deg=4)
             poly_func_all = np.poly1d(poly_coefic_all)
             trends_value_all = poly_func_all(x_idx)
-           
+            
             min1_idx_raw = np.argmin(temps)
             
             exclusion_zone = 45 
@@ -177,7 +177,7 @@ def folder_grafics_NDWI(input_folder, output_folder, n):
             x_slice = np.arange(start_slice, end_slice + 1)
             temps_slice = np.array(temps[start_slice:end_slice + 1])
             dates_slice = dates[start_slice:end_slice + 1]
-           
+            
             coef_lin = np.polyfit(x_slice, temps_slice, deg=1)
             y_lin = np.poly1d(coef_lin)(x_slice)
 
@@ -193,26 +193,26 @@ def folder_grafics_NDWI(input_folder, output_folder, n):
                     if actual_idx not in intersect_indices:
                         intersect_indices.append(actual_idx)
                         full_answer.append(dates[actual_idx])
-                   
+                    
             summary_file.write(f"{file_name}: {full_answer}\n")
 
             plt.figure(figsize=(13, 7))
             plt.plot(dates, temps, alpha=0.4, label='Raw data', color='gray')
             plt.plot(dates, trends_value_all, alpha=0.4, label='Overall trend (deg=4)', color='cyan', linestyle=':')
-           
+            
             if len(dates_slice) > 0:
                 plt.plot(dates_slice, y_lin, color='orange', linewidth=2.5, linestyle='--', label='Linear trend')
                 plt.plot(dates_slice, y_poly, color='purple', linewidth=2.5, label='Cubic trend')
-           
+            
             plt.scatter([dates[start_slice], dates[end_slice]], [temps[start_slice], temps[end_slice]],
                         color='black', s=120, zorder=5, label='Identified minimums')
-           
+            
             max_temp = max(temps) if temps else 1
             min_temp = min(temps) if temps else 0
             for idx_int in intersect_indices:
                 d_int = dates[idx_int]
                 y_int = temps[idx_int]
-               
+                
                 plt.scatter(d_int, y_int, color='red', marker='X', s=150, zorder=6)
                 plt.annotate(
                     f'Intersection\n{d_int}',
@@ -221,7 +221,7 @@ def folder_grafics_NDWI(input_folder, output_folder, n):
                     arrowprops=dict(facecolor='red', shrink=0.08, width=1, headwidth=6, headlength=6),
                     ha='center', fontsize=9, bbox=dict(boxstyle="round,pad=0.3", fc="yellow", alpha=0.3)
                 )
-           
+            
             plt.xticks(dates[::30], rotation=45)
             plt.title(f'NDWI: Minimums and trends analysis ({file_name})') 
             plt.xlabel('Date')
@@ -233,20 +233,20 @@ def folder_grafics_NDWI(input_folder, output_folder, n):
             graph_filename = file_name.replace('.csv', '.png')
             plt.savefig(os.path.join(output_folder, graph_filename))
             plt.close()
-           
+            
     print("NDWI processing done.")
 
 
 if __name__ == "__main__":
     #Path to the folder with temperature files
-    input_directory_v = r"C:\Users\Степа\Documents\data_w"
+    input_directory_v = r""
     #Path to the folder with NDWI index files
-    input_directory_w = r"C:\Users\Степа\Documents\data_w"
+    input_directory_w = r""
     #Path to the folder where you want to save obtained data 
-    output_directory = r"C:\Users\Степа\Documents\primchiki" 
-   
+    output_directory = r"" 
+    
     smoothing_window = int(input("Enter the smoothing window (n): "))
-   
-    folder_grafics_NDVI(input_directory_v, output_directory, smoothing_window)
+    
+    folder_grafics_TEMPERATURE(input_directory_v, output_directory, smoothing_window)
     folder_grafics_NDWI(input_directory_w, output_directory, smoothing_window)
     print("All done")
